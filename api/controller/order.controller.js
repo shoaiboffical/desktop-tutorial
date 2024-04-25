@@ -66,18 +66,35 @@ export const intent = async (req, res, next) => {
     res.status(500).send({ message: "Internal server error" });
   }
 }
+// export const getOrders = async (req, res, next) => {
+//   try {
+    
+//     const orders = await Order.find({
+//       ...(req.sellerId ? { sellerId: req.userId } : { buyerId: req.userId }),
+//       isCompleted: true
+//     })
+//     res.status(200).send(orders);
+//   } catch (err) {
+//     next(err)
+//   }
+// }
+
+
 export const getOrders = async (req, res, next) => {
   try {
-    
-    const orders = await Order.find({
-      ...(req.sellerId ? { sellerId: req.userId } : { buyerId: req.userId }),
-      isCompleted: false
-    })
+    const { role, isCompleted } = req.query; // Get role and isCompleted from query parameters
+    const query = {
+      [role === 'seller' ? 'sellerId' : 'buyerId']: req.userId,
+      isCompleted: isCompleted === 'true' // Convert query string to boolean
+    };
+
+    const orders = await Order.find(query);
     res.status(200).send(orders);
   } catch (err) {
-    next(err)
+    next(err);
   }
-}
+};
+
 
 
 // export const getOrders = async (req, res, next) => {
@@ -99,6 +116,7 @@ export const getOrders = async (req, res, next) => {
 //   }
 // }
 export const confirm = async (req, res, next) => {
+  consol.log("ok check ------->>>>>>>>>>>>>>>>>>>");
   try {
     const orders = await Order.findOneAndUpdate({
       payment_intent: req.body.payment_intent,
